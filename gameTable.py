@@ -5,30 +5,57 @@ import numpy as np
 import math
 import pickle
 
-exploredBoard = {}
+
 #gameboard
 class Board:
-    def __init__(self, board): #constructor 
+    #boards that have been explored in searching
+    exploredBoard = {}
+    #constructor 
+    def __init__(self, board):
+        #current board state
         self.board = board
-        self.emptyCell = np.where(board == 0)
+        #current empty cell location
+        self.emptyCell = self.board.index(0)
 
-    def moveUp(self):
-        raise NotImplementedError
-    def phase(self):
-        pass
+    #searching algorithm
+    def explore(self):
+        step = 0 
+        # keep looping until final state is reached
+        while not self.is_final_state:
+            # debug:show steps and board pathing
+            step += 1
+            print("step:", step, "\nboardPath:", exploredBoard)
 
-        #print board state
+            # pop shallowest node (first node) from queue
+            # change the board state TO IMPLEMENT
+            self.board = queue.pop(0)
+            if  self.board not in exploredBoard:
+                # add node to list of checked nodes
+                exploredBoard[self.board] = True
+
+                """
+                need to implement neighbour function tuple list
+                neighbours = graph[node]
+                """
+                # add neighbours of node to queue
+                for neighbour in neighbours:
+                    queue.append(neighbour)
+        return 
+    
+    #find valid moves or board states
+    def find_neighbor(self)
+        moveUpTable = {0:}
+
+    #print board state
     def print(self):
         print("board:\n",self.board)
         print("emptyCell:\n",self.emptyCell)
         return 
-        #check final state of game
-    def is_final_state(self):
-        return np.array_equal(self.board,[[0, 1, 2], [5, 4, 3]])
     
-
-
-def is_explored(game, exploredSet):
-    return exploredSet(tuple(game.board))
+    #check if it is final state of game
+    def is_final_state(self):
+        return self.board == (0,1,2,5,4,3)
+    def is_explored(self,exploredSet):
+        return exploredSet(self.board)
 
 
