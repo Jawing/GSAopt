@@ -17,40 +17,45 @@ class Board:
         #explored board for the object instance
         #goes within explore?
         self.exploredBoard = {}
-        #show path taken
-        self.path = []
 
     #searching algorithm
     def exploreBFS(self):
-        step = 0 
-        queue = deque([self.board])
+        
         #if start state is final
         if self.is_final_state():
-            return self.board
+            return print("Start is final:\n",self.board)
+        step = 0 
+        queue = deque([[self.board]])
+        
 
         # keep looping until final state is reached
         while queue:
-            # pop shallowest node (first node) from queue
-            self.board = queue.popleft()
+            # initialize path and pop from queue
+            path = queue.popleft()
+            
+            #current board from path
+            self.board = path[-1]
             self.boardKey = tuple(map(tuple,self.board))
             self.emptyCell = np.where(self.board == 0)
-            #self.path = self.path.append(self.board)
+            
             # debug:show steps and board pathing
             step += 1
             print("step:", step)
             self.print()
-
+            
             # add neighbours of node to queue
             neighbours = self.find_neighbor()
             for neighbour in neighbours:
                 # make sure not explore repeated paths
                 if  tuple(map(tuple,neighbour)) not in self.exploredBoard:
-                    #keep track of path
-                    #path.append(neighbour)
-                    queue.append(neighbour)
                     # return path if neighbour is goal
                     if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
-                        return neighbour
+                        path.append(neighbour)
+                        return print(*path, sep='\n-------\n')
+                    #keep track of path
+                    new_path = list(path)
+                    new_path.append(neighbour)
+                    queue.append(new_path)
             # add node to list of checked nodes
             self.exploredBoard[self.boardKey] = True
         return 
