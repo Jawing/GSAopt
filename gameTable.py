@@ -10,6 +10,9 @@ from collections import deque
 class Board:
     #boards that have been explored in searching
     exploredBoard = {}
+    #validMoves down right up left
+  
+
     #constructor 
     def __init__(self, board):
         #current board state
@@ -34,21 +37,36 @@ class Board:
             self.board = queue.popleft()
             # make sure not explore repeated paths
             if  self.board not in exploredBoard:
+                
+                neighbours = self.find_neighbor
+                # add neighbours of node to queue
+                
+                for neighbour in neighbours:
+                    new_path = list(path)
+                    new_path.append(neighbour)
+                    queue.append(new_path)
+                    # return path if neighbour is goal
+                    if neighbour == goal:
+                        return new_path
                 # add node to list of checked nodes
                 exploredBoard[self.board] = True
-                
-                """
-                need to implement neighbour function tuple list
-                neighbours = graph[node]
-                """
-                # add neighbours of node to queue
-                for neighbour in neighbours:
-                    queue.append(neighbour)
         return 
     
     #find valid moves or board states
-    def find_neighbor(self)
-        moveUpTable = {0:}
+    def find_neighbor(self):
+        def moveDown():
+            return self.board[0]
+
+        validMove = {
+            0:[moveDown,moveRight] #top left corner
+            1:[moveDown,moveRight,moveLeft] #top side
+            2:[moveDown,moveLeft] #top right corner
+            3:[moveUp,moveRight] #bottom left corner
+            4:[moveRight,moveUp,moveLeft] #bottom side
+            5:[moveUp,moveLeft] #bottom right corner
+        }
+        return validMove[self.emptyCell]
+        
 
     #print board state
     def print(self):

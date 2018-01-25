@@ -22,3 +22,6 @@ print(gameTable.exploredBoard)
 if game1.board not in gameTable.exploredBoard: gameTable.exploredBoard[game1.board] = True
 
 print(gameTable.exploredBoard)
+
+
+finalState[0]=finalState[1]
