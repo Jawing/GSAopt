@@ -8,96 +8,99 @@ from collections import deque
 
 #gameboard
 class Board:
-    #boards that have been explored in searching
-    
-    #validMoves down right up left
-  
-
     #constructor 
     def __init__(self, board):
-        #current board state
         self.board = board
-        #current empty cell location
-        self.emptyCell = self.board.index(0)
+        #key mapped as tuple
+        self.boardKey = tuple(map(tuple,self.board))
+        self.emptyCell = np.where(self.board == 0)
         #explored board for the object instance
         #goes within explore?
         self.exploredBoard = {}
+        #show path taken
+        self.path = []
 
     #searching algorithm
     def exploreBFS(self):
-
-        queue = deque([self.board])
-
         step = 0 
+        queue = deque([self.board])
         #if start state is final
         if self.is_final_state():
             return self.board
+
         # keep looping until final state is reached
         while queue:
-           
             # pop shallowest node (first node) from queue
             self.board = queue.popleft()
-            self.emptyCell = self.board.index(0)
-            
+            self.boardKey = tuple(map(tuple,self.board))
+            self.emptyCell = np.where(self.board == 0)
+            #self.path = self.path.append(self.board)
             # debug:show steps and board pathing
             step += 1
-            print("step:", step, "\n")
+            print("step:", step)
             self.print()
 
-
-            # make sure not explore repeated paths
-            if  self.board not in self.exploredBoard:
-                
-                neighbours = self.find_neighbor()
-                # add neighbours of node to queue
-                
-                for neighbour in neighbours:
-                    #keep track of path bugged!!!
-                    #path = list(self.board)
+            # add neighbours of node to queue
+            neighbours = self.find_neighbor()
+            for neighbour in neighbours:
+                # make sure not explore repeated paths
+                if  tuple(map(tuple,neighbour)) not in self.exploredBoard:
+                    #keep track of path
                     #path.append(neighbour)
-
                     queue.append(neighbour)
                     # return path if neighbour is goal
-                    if neighbour == (0,1,2,5,4,3):
+                    if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
                         return neighbour
-                # add node to list of checked nodes
-                self.exploredBoard[self.board] = True
+            # add node to list of checked nodes
+            self.exploredBoard[self.boardKey] = True
         return 
-    
-    def moveDowntest(self):
-        self.board=(self.board[3],)+self.board[1:3]+(self.board[0],)+self.board[4:6]
-    pass
 
     #find valid moves or board states
     def find_neighbor(self):
-          #hard coded INEFFICIENT
-        moveDown0=(self.board[3],)+self.board[1:3]+(self.board[0],)+self.board[4:6]
-        moveRight0=(self.board[1],)+(self.board[0],)+self.board[2:6]
-        moveDown1=(self.board[0],)+(self.board[4],)+self.board[2:4]+(self.board[1],)+(self.board[5],)
-        moveRight1=(self.board[0],)+(self.board[2],)+(self.board[1],)+self.board[3:6]
-        moveLeft1=(self.board[0],)+(self.board[2],)+(self.board[1],)+self.board[3:6]
-        
-        #valid move table
-        validMove = {
-            0:[moveDown0,moveRight0], #top left corner
-            1:[moveDown1,moveRight1,moveLeft1], #top side
-            2:[(0,2,0,0,0,0)],#[moveDown,moveLeft], #top right corner
-            3:[(0,0,3,0,0,0)],#[moveUp,moveRight], #bottom left corner
-            4:[(0,0,0,4,0,0)],#[moveRight,moveUp,moveLeft], #bottom side
-            5:[(0,0,0,0,5,0)],#[moveUp,moveLeft], #bottom right corner
-        }
 
-        return validMove[self.emptyCell]
+        #can optimize by saving previous move!!!
+        #valid move table
+        x,y=self.emptyCell
+
+        def moveDown():
+            board = np.copy(self.board)
+            board[x,y],board[x+1,y] = board[x+1,y],board[x,y]
+            return board
+        def moveRight():
+            board = np.copy(self.board)
+            board[x,y],board[x,y+1] = board[x,y+1],board[x,y]
+            return board
+        def moveLeft():
+            board = np.copy(self.board)
+            board[x,y],board[x,y-1] = board[x,y-1],board[x,y]
+            return board
+        def moveUp():
+            board = np.copy(self.board)
+            board[x,y],board[x-1,y] = board[x-1,y],board[x,y]
+            return board
+        if x[0] == 0 and y[0] == 0:
+            return [moveDown(), moveRight()]
+        elif x[0] == 0 and y[0] == 1:
+            return [moveDown(), moveRight(), moveLeft()]
+        elif x[0] == 0 and y[0] == 2:
+            return [moveDown(), moveLeft()]
+        elif x[0] == 1 and y[0] == 0:
+            return [moveRight(), moveUp()]
+        elif x[0] == 1 and y[0] == 1:
+            return [moveRight(), moveUp(), moveLeft()]
+        elif x[0] == 1 and y[0] == 2:
+            return [moveUp(), moveLeft()]
+        else: return print("error in find_neighbor")
         
 
     #print board state
     def print(self):
-        print("board:\n",self.board[0:3],"\n",self.board[3:6])
-        print("emptyCell:\n",self.emptyCell)
+        print("board:\n",self.board)
+        print("emptyCell:\n",self.emptyCell,"\n")
         return 
     
     #check if it is final state of game
     def is_final_state(self):
-        return self.board == (0,1,2,5,4,3)
+        return np.array_equal(self.board,[[0, 1, 2], [5, 4, 3]])
 
 
