@@ -4,7 +4,7 @@
 import numpy as np
 import math
 import pickle
-
+from collections import deque
 
 #gameboard
 class Board:
@@ -19,6 +19,9 @@ class Board:
 
     #searching algorithm
     def explore(self):
+        ##???queue
+        queue = deque([self.board])
+
         step = 0 
         # keep looping until final state is reached
         while not self.is_final_state:
@@ -27,12 +30,13 @@ class Board:
             print("step:", step, "\nboardPath:", exploredBoard)
 
             # pop shallowest node (first node) from queue
-            # change the board state TO IMPLEMENT
-            self.board = queue.pop(0)
+            # change the board state TO IMPLEMENT!!
+            self.board = queue.popleft()
+            # make sure not explore repeated paths
             if  self.board not in exploredBoard:
                 # add node to list of checked nodes
                 exploredBoard[self.board] = True
-
+                
                 """
                 need to implement neighbour function tuple list
                 neighbours = graph[node]
