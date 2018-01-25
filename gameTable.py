@@ -51,19 +51,23 @@ class Board:
                 # add node to list of checked nodes
                 exploredBoard[self.board] = True
         return 
-    
+    ##need fix
+    def moveDowntest(self):
+        self.board=(self.board[3],)+self.board[1:3]+(self.board[0],)+self.board[4:6]
+    pass
+
     #find valid moves or board states
     def find_neighbor(self):
         def moveDown():
-            return self.board[0]
-
+            return (self.board[3,])+self.board[1:3]+(self.board[0],)+self.board[4:6]
+        ##need fix
         validMove = {
-            0:[moveDown,moveRight] #top left corner
-            1:[moveDown,moveRight,moveLeft] #top side
-            2:[moveDown,moveLeft] #top right corner
-            3:[moveUp,moveRight] #bottom left corner
-            4:[moveRight,moveUp,moveLeft] #bottom side
-            5:[moveUp,moveLeft] #bottom right corner
+            0:[moveDown,moveRight], #top left corner
+            1:[moveDown,moveRight,moveLeft], #top side
+            2:[moveDown,moveLeft], #top right corner
+            3:[moveUp,moveRight], #bottom left corner
+            4:[moveRight,moveUp,moveLeft], #bottom side
+            5:[moveUp,moveLeft], #bottom right corner
         }
         return validMove[self.emptyCell]
         

@@ -8,7 +8,7 @@ import gameTable
 
 finalState = (0,1,2,5,4,3)
 
-game1 = gameTable.Board((1,4,2,5,3,0))
+game1 = gameTable.Board((0,4,2,5,3,1))
 game2 = gameTable.Board(finalState)
 game1.print()
 
@@ -17,11 +17,12 @@ print(game2.is_final_state())
 
 
 
-print(gameTable.exploredBoard)
+print(game1.exploredBoard)
 
-if game1.board not in gameTable.exploredBoard: gameTable.exploredBoard[game1.board] = True
+if game1.board not in game1.exploredBoard: game1.exploredBoard[game1.board] = True
 
-print(gameTable.exploredBoard)
-
-
-finalState[0]=finalState[1]
+print(game1.exploredBoard)
+print(game2.exploredBoard)
+print(game1.board[1:3])
+game1.moveDowntest()
+game1.print()
