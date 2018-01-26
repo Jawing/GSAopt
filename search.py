@@ -35,8 +35,8 @@ def exploreBFS(game):
         gameCopy.emptyCell = np.where(gameCopy.board == 0)
         
         #TODO for dfs and bfs
-        #print(manhattanCost(gameCopy))
-        #print(naiveCost(gameCopy))
+        print(manhattanCost(gameCopy))
+        print(naiveCost(gameCopy))
 
         # debug:show steps and board pathing
         step += 1
