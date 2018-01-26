@@ -3,6 +3,13 @@
 import copy
 import numpy as np
 from collections import deque
+import gameTable
+
+class Node:
+    def __init__(self, game, parent=None):
+        self.game = game
+        self.parent = parent
+        self.children = []
 
 #bfs searching algorithm
 def exploreBFS(game):
@@ -14,7 +21,7 @@ def exploreBFS(game):
     #explored board for the object instance
     exploredBoard = {} 
     #make copy of original
-    gameCopy = copy.copy(game)
+    gameCopy = gameTable.Board(game.board)
     queue = deque([[gameCopy.board]])
     
     # keep looping until final state is reached
@@ -29,7 +36,7 @@ def exploreBFS(game):
         
         #TODO for dfs and bfs
         #print(manhattanCost(gameCopy))
-        #print(naiveCost(game))
+        #print(naiveCost(gameCopy))
 
         # debug:show steps and board pathing
         step += 1
