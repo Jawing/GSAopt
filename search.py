@@ -3,7 +3,6 @@
 import copy
 import numpy as np
 from collections import deque
-import gameTable
 
 class Node:
     def __init__(self, game, parent=None):
@@ -21,7 +20,7 @@ def exploreBFS(game):
     #explored board for the object instance
     exploredBoard = {} 
     #make copy of original
-    gameCopy = gameTable.Board(game.board)
+    gameCopy = copy.copy(game)
     queue = deque([[gameCopy.board]])
     
     # keep looping until final state is reached
