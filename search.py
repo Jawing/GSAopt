@@ -5,10 +5,28 @@ import numpy as np
 from collections import deque
 
 class Node:
-    def __init__(self, game, parent=None):
-        self.game = game
+    def __init__(self, data, children=None, parent=None):
+        self.data = data
         self.parent = parent
-        self.children = []
+        self.children = children or []
+        #store prev move
+        self.prev = None
+        
+    def add_child(self, data):
+        new_child = Tree(data, parent=self)
+        self.children.append(new_child)
+        return new_child
+
+    def is_root(self):
+        return self.parent is None
+
+    def is_leaf(self):
+        return not self.children
+
+    def __str__(self):
+        if self.is_leaf():
+            return str(self.data)
+        return '{data} [{children}]'.format(data=self.data, children=', '.join(map(str, self.children)))
 
 #bfs searching algorithm
 def exploreBFS(game):
@@ -21,32 +39,27 @@ def exploreBFS(game):
     exploredBoard = {} 
     #make copy of original
     gameCopy = copy.copy(game)
-    queue = deque([[gameCopy.board]])
+    #initialize start queue
+    queue = deque([gameCopy])
     
     # keep looping until final state is reached
     while queue:
         # initialize path and pop from queue
-        path = queue.popleft()
-        
+        node = Node(queue.popleft())
         #current board from path
-        gameCopy.board = path[-1]
-        boardKey = tuple(map(tuple,gameCopy.board))
-        gameCopy.emptyCell = np.where(gameCopy.board == 0)
-        
-        #TODO for dfs and bfs
-        print(manhattanCost(gameCopy))
-        print(naiveCost(gameCopy))
+        boardKey = keyMap(node.game.board)
+        cost = manhattanCost(node.game.board)
 
         # debug:show steps and board pathing
         step += 1
         print("step:", step)
-        print_board(gameCopy)
+        print_board(node.game)
         
         # add neighbours of node to queue
-        neighbours = find_neighbor(gameCopy)
+        neighbours = find_neighbor(node)
         for neighbour in neighbours:
             # make sure not explore repeated paths
-            if  tuple(map(tuple,neighbour)) not in exploredBoard:
+            if  keyMap(neighbour) not in exploredBoard:
                 # return path if neighbour is goal
                 if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
                     path.append(neighbour)
@@ -78,7 +91,7 @@ def exploreDFS(game):
         
         #current board from path
         gameCopy.board = path[-1]
-        boardKey = tuple(map(tuple,gameCopy.board))
+        boardKey = keyMap(gameCopy.board)
         gameCopy.emptyCell = np.where(gameCopy.board == 0)
         
         # debug:show steps and board pathing
@@ -90,7 +103,7 @@ def exploreDFS(game):
         neighbours = find_neighbor(gameCopy)
         for neighbour in neighbours:
             # make sure not explore repeated paths
-            if  tuple(map(tuple,neighbour)) not in exploredBoard:
+            if  keyMap(neighbour) not in exploredBoard:
                 # return path if neighbour is goal
                 if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
                     path.append(neighbour)
@@ -104,6 +117,9 @@ def exploreDFS(game):
         exploredBoard[boardKey] = True
     return 
 
+# key mapping for explored nodes
+def keyMap(board):
+    return tuple(map(tuple,board))
 #cost heuristic +x+y distance away from location
 def manhattanCost(game):
     cost = 0
@@ -124,10 +140,11 @@ def naiveCost(game):
 
 
 #find valid moves or board states
-def find_neighbor(game):
+def find_neighbor(node):
     #TODO can optimize by saving previous move!!!(game,path,heuristic)
     #valid move table
-    x,y=game.emptyCell
+    #TODO change x y variables
+    x,y=node.game.emptyCell
     def moveDown():
         board = np.copy(game.board)
         board[x,y],board[x+1,y] = board[x+1,y],board[x,y]
