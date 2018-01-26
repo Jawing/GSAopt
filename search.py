@@ -27,6 +27,10 @@ def exploreBFS(game):
         boardKey = tuple(map(tuple,gameCopy.board))
         gameCopy.emptyCell = np.where(gameCopy.board == 0)
         
+        #TODO for dfs and bfs
+        #print(manhattanCost(gameCopy))
+        #print(naiveCost(game))
+
         # debug:show steps and board pathing
         step += 1
         print("step:", step)
@@ -95,34 +99,27 @@ def exploreDFS(game):
     return 
 
 #cost heuristic +x+y distance away from location
-def manhattanCost(board):
-    #TODO function for scalable finalpos
-    finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
-                (0, 1)]
+def manhattanCost(game):
     cost = 0
-    for y in range(board.shape[0]):
-        for x in range(board.shape[1]):
-            t = board[y,x]
-            xf, yf = finalpos[t]
+    for y in range(game.board.shape[0]):
+        for x in range(game.board.shape[1]):
+            xf, yf = game.goalLocation[game.board[y,x]]
             cost += abs(xf - x) + abs(yf - y)
     return cost
 
 #cost heuristic +1 for wrong tile location
-def naiveCost(board):
-    #TODO function for scalable finalpos
-    finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
-                (0, 1)]
+def naiveCost(game):
     cost = 0
-    for y in range(board.shape[0]):
-        for x in range(board.shape[1]):
-            t = board[y,x]
-            if finalpos[t] != (x, y):
+    for y in range(game.board.shape[0]):
+        for x in range(game.board.shape[1]):
+            if game.goalLocation[game.board[y,x]] != (x, y):
                 cost += 1
     return cost
 
+
 #find valid moves or board states
-def find_neighbor(game,path,heuristic):
-    #TODO can optimize by saving previous move!!!(game,path)
+def find_neighbor(game):
+    #TODO can optimize by saving previous move!!!(game,path,heuristic)
     #valid move table
     x,y=game.emptyCell
     def moveDown():
@@ -163,4 +160,4 @@ def print_board(game):
 
 #check if it is final state of game
 def is_final_state(game):
-    return np.array_equal(game.board,[[0, 1, 2], [5, 4, 3]])
+    return np.array_equal(game.board,game.goal)
