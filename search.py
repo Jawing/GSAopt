@@ -4,9 +4,8 @@ import copy
 import numpy as np
 from collections import deque
 
-
 #bfs searching algorithm
-def exploreBFS(game):   
+def exploreBFS(game):
     #if start state is final
     if is_final_state(game):
         print("BFS:")
@@ -95,9 +94,35 @@ def exploreDFS(game):
         exploredBoard[boardKey] = True
     return 
 
+#cost heuristic +x+y distance away from location
+def manhattanCost(board):
+    #TODO function for scalable finalpos
+    finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
+                (0, 1)]
+    cost = 0
+    for y in range(board.shape[0]):
+        for x in range(board.shape[1]):
+            t = board[y,x]
+            xf, yf = finalpos[t]
+            cost += abs(xf - x) + abs(yf - y)
+    return cost
+
+#cost heuristic +1 for wrong tile location
+def naiveCost(board):
+    #TODO function for scalable finalpos
+    finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
+                (0, 1)]
+    cost = 0
+    for y in range(board.shape[0]):
+        for x in range(board.shape[1]):
+            t = board[y,x]
+            if finalpos[t] != (x, y):
+                cost += 1
+    return cost
+
 #find valid moves or board states
-def find_neighbor(game):
-    #can optimize by saving previous move!!!
+def find_neighbor(game,path,heuristic):
+    #TODO can optimize by saving previous move!!!(game,path)
     #valid move table
     x,y=game.emptyCell
     def moveDown():

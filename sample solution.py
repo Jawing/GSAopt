@@ -9,16 +9,16 @@ class Board:
         self.matrix = matrix
         self.whitepos = whitepos
         if not whitepos:
-            for y in xrange(3):
-                for x in xrange(3):
+            for y in range(3):
+                for x in range(3):
                     if board[y][x] == 0:
                         self.whitepos = (x, y)
 
 
 def is_final_state(board):
     final = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
-    for y in xrange(3):
-        for x in xrange(3):
+    for y in range(3):
+        for x in range(3):
             if board.matrix[y][x] != final[y][x]:
                 return False
     return True
@@ -39,8 +39,8 @@ def manhattan_heur(board):
     finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
                 (0, 1)]
     cost = 0
-    for y in xrange(3):
-        for x in xrange(3):
+    for y in range(3):
+        for x in range(3):
             t = board.matrix[y][x]
             xf, yf = finalpos[t]
             cost += abs(xf - x) + abs(yf - y)
@@ -51,8 +51,8 @@ def wrongplace_heur(board):
     finalpos = [(1, 1), (0, 0), (1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2),
                 (0, 1)]
     cost = 0
-    for y in xrange(3):
-        for x in xrange(3):
+    for y in range(3):
+        for x in range(3):
             t = board.matrix[y][x]
             if finalpos[t] != (x, y):
                 cost += 1
@@ -159,7 +159,7 @@ def bpl_queue(nodes, new_nodes, max_depth):
 
 def bpi_search(board):
     solution = Solution(None, 0, 0)
-    for max_depth in xrange(0, sys.maxint):
+    for max_depth in range(0, sys.maxint):
         sol = search(board, bpl_queue, max_depth)
         solution.inc(sol)
         if solution.node:
