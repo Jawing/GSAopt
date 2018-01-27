@@ -25,6 +25,7 @@ class Node:
     """
     #comparison function for heapq after depth
     #TODO currenly only using id, future use cost?
+    #id is tuple paired comparison
     def __lt__(self, other):
         return self.id < other.id
 
@@ -77,10 +78,10 @@ def explore(game, searchStructure, heuristic):
         node = queue.get()
         #NOTE:Debug:show search path
         step += 1
-        print("step:", step)
+        print("Search Step:", step)
         print_board(node.game)
         # add neighbours of node to queue
-        neighbours = find_neighbor(node)
+        neighbours = find_neighbour(node)
         for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
             #print("neighbour:")
@@ -93,11 +94,14 @@ def explore(game, searchStructure, heuristic):
             if  neighbour.id not in exploredBoard:
                 # return path if neighbour is goal
                 if is_final_state(neighbour.game):
+                    step += 1
+                    print("Search Step:", step)
+                    print_board(neighbour.game)
                     pathstep = 0
                     for parent in neighbour.rootPath():
                         #NOTE:Debug:show solution path
                         pathstep += 1
-                        print("backstep:", pathstep)
+                        print("Sol. Backstep:", pathstep)
                         print_board(parent.game)
                     return 
                 #add neighbour to queue
