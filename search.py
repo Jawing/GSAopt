@@ -6,21 +6,22 @@ from collections import deque
 import gameTable
 import heapq
 class Node:
-    def __init__(self, game, parent=None, children=None):
+    def __init__(self, game, parent=None):
         self.game = game
         self.parent = parent
-        #children not implemented in methods below
-        #self.children = children or []
+        self.children = []
         #store prev move
         self.prev = None
         self.depth = 0
-        #TODO implement cost comparison
-        self.cost = manhattanCost(self.game)
+        self.distance = 0
+        self.cost = 0
         #Hashkey
         self.id = keyMap(self.game)
-        
-        #comparison function for heapq after depth
-        #TODO currenly only using id, future use cost?
+    def getChildren(self):
+        self.children = find_neighbour(self)
+        return
+    #comparison function for heapq after depth
+    #TODO currenly only using id, future use cost?
     def __lt__(self, other):
         return self.id < other.id
 
@@ -39,14 +40,7 @@ class Node:
     def __str__(self):
         if self.is_leaf():
             return str(self.game)
-        return '{game} [{children}]'.format(game=self.game, children=', '.join(map(str, self.children)))
-    
-    #interate through all children
-    def getChild(self):
-        yield self
-        for child in self.children:
-            for node in child:
-                yield node
+        return '{game} [{children}]'.format(game=self.game, children=', '.join(map(str, self.children)))   
     """
     
     #parentPath returns everything to original
@@ -57,41 +51,43 @@ class Node:
             yield self
 
 #Searching algorithm
-def explore(game, searchStructure):
-    #if start state is final
+def explore(game, searchStructure, heuristic):
+    #return if start state is final
     if is_final_state(game):
         print("End:")
         return print("Start is final:\n",game.board)
-    step = 0 
-    #explored nodes
-    exploredBoard = {} 
-    #make copy of original, starting game
-    gameCopy = copy.deepcopy(game)
+    step = 0 #step countter
+    exploredBoard = {} #explored nodes
+    #make copy of original, starting game 
+    gameCopy = copy.deepcopy(game) 
     #initialize search structure
-    queue = searchStructure(Node(gameCopy))
+    queue = searchStructure(Node(gameCopy)) 
     # keep looping until final state is reached
     while queue:
-        # initialize path and apply bfs or dfs to queue
+        # pop node
         node = queue.get()
-        #print(manhattanCost(node.game.board))
-        #debug:show steps and board pathing
+        #NOTE:Debug:show search path
         step += 1
         print("step:", step)
         print_board(node.game)
+        #FIXME bring to children
         # add neighbours of node to queue
-        neighbours = find_neighbor(node)
-        depth = 0
-        for neighbour in neighbours:
+        node.getChildren()
+        for neighbour in node.children:
+            #NOTE:Debug:print all neighbours
             #print("neighbour:")
             #print_board(neighbour.game)
+            
+            #Calculate cost based on heuristic
+            neighbour.cost = heuristic(neighbour.game) + neighbour.distance
+
             # make sure not explore repeated paths
             if  neighbour.id not in exploredBoard:
                 # return path if neighbour is goal
                 if is_final_state(neighbour.game):
                     pathstep = 0
-                    #print("backstep:", pathstep)
-                    #print_board(neighbour.game)
                     for parent in neighbour.rootPath():
+                        #NOTE:Debug:show solution path
                         pathstep += 1
                         print("backstep:", pathstep)
                         print_board(parent.game)
@@ -100,7 +96,7 @@ def explore(game, searchStructure):
                 queue.append(neighbour)
         # add node to list of checked nodes
         exploredBoard[node.id] = node
-    return 
+    return print("Error final state not found")
 
 #different searching Structure
 class BFS:
@@ -120,37 +116,20 @@ class DFS:
 class BinaryHeap:
     def __init__(self,node):
         self.list = []
-        heapq.heappush(self.list, (node.depth,node))
+        heapq.heappush(self.list, (node.distance,node))
     def get(self):
         return heapq.heappop(self.list)[1]
     def append(self,node):
-        return heapq.heappush(self.list, (node.depth,node))
+        return heapq.heappush(self.list, (node.distance,node))
 
 # key mapping for explored nodes
 def keyMap(game):
     return tuple(map(tuple,game.board))
-#cost heuristic +x+y distance away from location
-def manhattanCost(game):
-    cost = 0
-    for y in range(game.board.shape[0]):
-        for x in range(game.board.shape[1]):
-            xf, yf = game.goalLocation[game.board[y,x]]
-            cost += abs(xf - x) + abs(yf - y)
-    return cost
-
-#cost heuristic +1 for wrong tile location
-def naiveCost(game):
-    cost = 0
-    for y in range(game.board.shape[0]):
-        for x in range(game.board.shape[1]):
-            if game.goalLocation[game.board[y,x]] != (x, y):
-                cost += 1
-    return cost
 
 #return all valid moves as node's children
 #Could link to parent as child
-#Counter Clockwise find neighbor
-def find_neighborCC(node):
+#Counter Clockwise find neighbour
+def find_neighbourCC(node):
     #optimized by checking prev move
     #valid node list
     neighbours = []
@@ -159,30 +138,31 @@ def find_neighborCC(node):
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        #NOTE Each edge only cost 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     return neighbours
 
-#Clockwise find neighbor
-def find_neighbor(node):
+#Clockwise find neighbour
+def find_neighbour(node):
     #optimized by checking prev move
     #valid node list
     neighbours = []
@@ -191,25 +171,25 @@ def find_neighbor(node):
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
         newNode.depth = node.depth + 1
-        #node.children.append(newNode)
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     return neighbours 
 
