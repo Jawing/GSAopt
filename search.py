@@ -4,16 +4,24 @@ import copy
 import numpy as np
 from collections import deque
 import gameTable
+import heapq
 class Node:
     def __init__(self, game, parent=None, children=None):
         self.game = game
         self.parent = parent
-        #TODO children not implemented in methods below
-        self.children = children or []
+        #children not implemented in methods below
+        #self.children = children or []
         #store prev move
         self.prev = None
-        #implement depth?
+        #TODO implement depth 
         self.depth = None
+        #TODO implement cost function
+        #cost
+        self.cost = manhattanCost(self.game)
+        #Hashkey
+        self.id = keyMap(self.game)
+
+    """Currently not used
     def add_child(self, game):
         new_child = Tree(game, parent=self)
         self.children.append(new_child)
@@ -36,6 +44,8 @@ class Node:
         for child in self.children:
             for node in child:
                 yield node
+    """
+
     #parentPath returns everything to original
     def rootPath(self):
         yield self
@@ -43,7 +53,7 @@ class Node:
             self = self.parent
             yield self
 #Searching algorithm
-def explore(game, searchFunction):
+def explore(game, searchStructure):
     #if start state is final
     if is_final_state(game):
         print("End:")
@@ -54,18 +64,13 @@ def explore(game, searchFunction):
     #make copy of original, starting node
     gameCopy = copy.deepcopy(game)
     #initialize start queue
-    queue = deque([Node(gameCopy)])
+    #TODO Search Function
+    queue = searchStructure([Node(gameCopy)])
     # keep looping until final state is reached
     while queue:
         # initialize path and apply bfs or dfs to queue
-        node = searchFunction(queue)
-        #current board from path
-        boardKey = keyMap(node.game.board)
-
-
+        node = searchStructure.get
         #print(manhattanCost(node.game.board))
-
-        
         #debug:show steps and board pathing
         step += 1
         print("step:", step)
@@ -76,7 +81,7 @@ def explore(game, searchFunction):
             #print("neighbour:")
             #print_board(neighbour.game)
             # make sure not explore repeated paths
-            if  keyMap(neighbour.game.board) not in exploredBoard:
+            if  neighbour.id not in exploredBoard:
                 # return path if neighbour is goal
                 if is_final_state(neighbour.game):
                     pathstep = 0
@@ -88,19 +93,39 @@ def explore(game, searchFunction):
                         print_board(parent.game)
                     return 
                 #add neighbour to queue
-                queue.append(neighbour)
+                #TODO searchfunc
+                searchStructure.append(neighbour)
         # add node to list of checked nodes
-        exploredBoard[boardKey] = True
+        exploredBoard[node.id] = node
     return 
 
-def BFS(queue):
-    return queue.popleft()
-def DFS(queue):
-    return queue.pop()
+#different searching Structure
+class BFS:
+    def __init__(self,node):
+        self.list = deque(node)
+    def get(self):
+        return self.list.popleft()
+    def append(self,node):
+        return self.list.append(node)
+class DFS:
+    def __init__(self,node):
+        self.list = deque(node)
+    def get(self):
+        return self.list.pop()
+    def append(self,node):
+        return self.list.append(node)
+class BinaryHeap:
+    def __init__(self,node):
+        self.list = []
+        heapq.heappush(self.list, (node.depth,node))
+    def get(self):
+        return heapq.heappop(self.list)
+    def append(self,node):
+        return heapq.heappush(self.list, (node.depth,node))
 
 # key mapping for explored nodes
-def keyMap(board):
-    return tuple(map(tuple,board))
+def keyMap(game):
+    return tuple(map(tuple,game.board))
 #cost heuristic +x+y distance away from location
 def manhattanCost(game):
     cost = 0
@@ -119,7 +144,7 @@ def naiveCost(game):
                 cost += 1
     return cost
 
-
+#TODO convert find_neighbor to child function
 #return all valid moves as nodes
 #Counter Clockwise find neighbor
 def find_neighborCC(node):
