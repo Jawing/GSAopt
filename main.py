@@ -13,8 +13,7 @@ search.explore(game1, search.BinaryHeap, gameTable.NoCost)
 search.explore(game1, search.BinaryHeap, gameTable.manhattanCost)
 
 search.explore(game1, search.BFS, gameTable.NoCost)
-"""
-search.explore(game2,search.BFS, gameTable.NoCost)
-search.explore(game1,search.DFS, gameTable.NoCost)
-search.explore(game2,search.DFS, gameTable.NoCost)
-"""
+
+search.explore(game2, search.BFS, gameTable.NoCost)
+search.explore(game1, search.DFS, gameTable.NoCost)
+search.explore(game2, search.DFS, gameTable.NoCost)
