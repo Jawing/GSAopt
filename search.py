@@ -6,10 +6,11 @@ from collections import deque
 import gameTable
 import heapq
 class Node:
-    def __init__(self, game, parent=None, children=None):
+    def __init__(self, game, parent=None):
         self.game = game
         self.parent = parent
-        self.children = []
+        #NOTE:Children:toStore takes more space in memory
+        #self.children = children or []
         #store prev move
         self.prev = None
         self.depth = 0
@@ -17,9 +18,11 @@ class Node:
         self.cost = 0
         #Hashkey
         self.id = keyMap(self.game)
+    """NOTE:Children
     def getChildren(self):
         self.children = find_neighbour(self)
         return
+    """
     #comparison function for heapq after depth
     #TODO currenly only using id, future use cost?
     def __lt__(self, other):
@@ -41,6 +44,12 @@ class Node:
         if self.is_leaf():
             return str(self.game)
         return '{game} [{children}]'.format(game=self.game, children=', '.join(map(str, self.children)))   
+    #interate through all children in tree
+-    def getChild(self):
+-        yield self
+-        for child in self.children:
+-            for node in child:
+-                yield node
     """
     
     #parentPath returns everything to original
@@ -70,10 +79,9 @@ def explore(game, searchStructure, heuristic):
         step += 1
         print("step:", step)
         print_board(node.game)
-        #FIXME bring to children
         # add neighbours of node to queue
-        node.getChildren()
-        for neighbour in node.children:
+        neighbours = find_neighbor(node)
+        for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
             #print("neighbour:")
             #print_board(neighbour.game)
