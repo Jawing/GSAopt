@@ -13,20 +13,16 @@ class Node:
         #self.children = children or []
         #store prev move
         self.prev = None
-        #TODO implement depth 
-        self.depth = 0.
-        #TODO implement cost function
-        #cost
+        self.depth = 0
+        #TODO implement cost comparison
         self.cost = manhattanCost(self.game)
         #Hashkey
         self.id = keyMap(self.game)
         
         #comparison function for heapq after depth
         #TODO currenly only using id, future use cost?
-        def __lt__(self, other):
-            return self.id < other.id
-        def __eq__(self, other):
-            return self.id == other.id
+    def __lt__(self, other):
+        return self.id < other.id
 
     """Currently not used
     def add_child(self, game):
@@ -100,16 +96,8 @@ def explore(game, searchStructure):
                         print("backstep:", pathstep)
                         print_board(parent.game)
                     return 
-                
-                
-                #workaround node comparison not working
-                #depth += 0.1
-                #neighbour.depth += depth
-                
                 #add neighbour to queue
                 queue.append(neighbour)
-
-
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return 
@@ -136,7 +124,6 @@ class BinaryHeap:
     def get(self):
         return heapq.heappop(self.list)[1]
     def append(self,node):
-        #TODO bugged node comparison!!!! 
         return heapq.heappush(self.list, (node.depth,node))
 
 # key mapping for explored nodes

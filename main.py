@@ -12,9 +12,10 @@ game2 = gameTable.Board(finalState)
 search.explore(game1,search.BinaryHeap)
 
 search.explore(game1,search.BFS)
+"""
 search.explore(game2,search.BFS)
 search.explore(game1,search.DFS)
 search.explore(game2,search.DFS)
-
+"""
 
 
