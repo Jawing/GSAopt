@@ -61,7 +61,11 @@ def explore(game, searchFunction):
         node = searchFunction(queue)
         #current board from path
         boardKey = keyMap(node.game.board)
+
+
         #print(manhattanCost(node.game.board))
+
+        
         #debug:show steps and board pathing
         step += 1
         print("step:", step)
@@ -117,7 +121,8 @@ def naiveCost(game):
 
 
 #return all valid moves as nodes
-def find_neighbor(node):
+#Counter Clockwise find neighbor
+def find_neighborCC(node):
     #optimized by checking prev move
     #valid node list
     neighbours = []
@@ -143,7 +148,35 @@ def find_neighbor(node):
         #node.children.append(newNode)
         neighbours.append(newNode)
     return neighbours
-   
+
+#Clockwise find neighbor
+def find_neighbor(node):
+    #optimized by checking prev move
+    #valid node list
+    neighbours = []
+    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
+    if (x > 0) and node.prev != "R":
+        newNode = Node(moveLeft(node.game),node)
+        newNode.prev = "L"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (y > 0) and node.prev != "D":
+        newNode = Node(moveUp(node.game),node)
+        newNode.prev = "U"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
+        newNode = Node(moveRight(node.game),node)
+        newNode.prev = "R"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
+        newNode = Node(moveDown(node.game),node)
+        newNode.prev = "D"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    return neighbours 
+
 #print board state
 def print_board(game):
     print("board:\n",game.board)
