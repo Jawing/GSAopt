@@ -14,12 +14,19 @@ class Node:
         #store prev move
         self.prev = None
         #TODO implement depth 
-        self.depth = None
+        self.depth = 0.
         #TODO implement cost function
         #cost
         self.cost = manhattanCost(self.game)
         #Hashkey
         self.id = keyMap(self.game)
+        
+        #comparison function for heapq after depth
+        #TODO currenly only using id, future use cost?
+        def __lt__(self, other):
+            return self.id < other.id
+        def __eq__(self, other):
+            return self.id == other.id
 
     """Currently not used
     def add_child(self, game):
@@ -45,13 +52,14 @@ class Node:
             for node in child:
                 yield node
     """
-
+    
     #parentPath returns everything to original
     def rootPath(self):
         yield self
         while self.parent != None:
             self = self.parent
             yield self
+
 #Searching algorithm
 def explore(game, searchStructure):
     #if start state is final
@@ -61,15 +69,14 @@ def explore(game, searchStructure):
     step = 0 
     #explored nodes
     exploredBoard = {} 
-    #make copy of original, starting node
+    #make copy of original, starting game
     gameCopy = copy.deepcopy(game)
-    #initialize start queue
-    #TODO Search Function
-    queue = searchStructure([Node(gameCopy)])
+    #initialize search structure
+    queue = searchStructure(Node(gameCopy))
     # keep looping until final state is reached
     while queue:
         # initialize path and apply bfs or dfs to queue
-        node = searchStructure.get
+        node = queue.get()
         #print(manhattanCost(node.game.board))
         #debug:show steps and board pathing
         step += 1
@@ -77,6 +84,7 @@ def explore(game, searchStructure):
         print_board(node.game)
         # add neighbours of node to queue
         neighbours = find_neighbor(node)
+        depth = 0
         for neighbour in neighbours:
             #print("neighbour:")
             #print_board(neighbour.game)
@@ -92,9 +100,16 @@ def explore(game, searchStructure):
                         print("backstep:", pathstep)
                         print_board(parent.game)
                     return 
+                
+                
+                #workaround node comparison
+                depth += 0.1
+                neighbour.depth += depth
+                
                 #add neighbour to queue
-                #TODO searchfunc
-                searchStructure.append(neighbour)
+                queue.append(neighbour)
+
+
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return 
@@ -102,14 +117,14 @@ def explore(game, searchStructure):
 #different searching Structure
 class BFS:
     def __init__(self,node):
-        self.list = deque(node)
+        self.list = deque([node])
     def get(self):
         return self.list.popleft()
     def append(self,node):
         return self.list.append(node)
 class DFS:
     def __init__(self,node):
-        self.list = deque(node)
+        self.list = deque([node])
     def get(self):
         return self.list.pop()
     def append(self,node):
@@ -119,8 +134,9 @@ class BinaryHeap:
         self.list = []
         heapq.heappush(self.list, (node.depth,node))
     def get(self):
-        return heapq.heappop(self.list)
+        return heapq.heappop(self.list)[1]
     def append(self,node):
+        #TODO bugged node comparison!!!! 
         return heapq.heappush(self.list, (node.depth,node))
 
 # key mapping for explored nodes
@@ -144,8 +160,8 @@ def naiveCost(game):
                 cost += 1
     return cost
 
-#TODO convert find_neighbor to child function
-#return all valid moves as nodes
+#return all valid moves as node's children
+#Could link to parent as child
 #Counter Clockwise find neighbor
 def find_neighborCC(node):
     #optimized by checking prev move
@@ -155,21 +171,25 @@ def find_neighborCC(node):
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     return neighbours
@@ -183,21 +203,25 @@ def find_neighbor(node):
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
+        newNode.depth = node.depth + 1
         #node.children.append(newNode)
         neighbours.append(newNode)
     return neighbours 
