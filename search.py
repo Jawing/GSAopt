@@ -3,17 +3,19 @@
 import copy
 import numpy as np
 from collections import deque
-
+import gameTable
 class Node:
-    def __init__(self, data, children=None, parent=None):
-        self.data = data
+    def __init__(self, game, parent=None, children=None):
+        self.game = game
         self.parent = parent
+        #TODO children not implemented in methods below
         self.children = children or []
         #store prev move
         self.prev = None
-        
-    def add_child(self, data):
-        new_child = Tree(data, parent=self)
+        #implement depth?
+        self.depth = None
+    def add_child(self, game):
+        new_child = Tree(game, parent=self)
         self.children.append(new_child)
         return new_child
 
@@ -25,97 +27,72 @@ class Node:
 
     def __str__(self):
         if self.is_leaf():
-            return str(self.data)
-        return '{data} [{children}]'.format(data=self.data, children=', '.join(map(str, self.children)))
-
-#bfs searching algorithm
-def exploreBFS(game):
+            return str(self.game)
+        return '{game} [{children}]'.format(game=self.game, children=', '.join(map(str, self.children)))
+    
+    #interate through all children
+    def getChild(self):
+        yield self
+        for child in self.children:
+            for node in child:
+                yield node
+    #parentPath returns everything to original
+    def rootPath(self):
+        yield self
+        while self.parent != None:
+            self = self.parent
+            yield self
+#Searching algorithm
+def explore(game, searchFunction):
     #if start state is final
     if is_final_state(game):
-        print("BFS:")
+        print("End:")
         return print("Start is final:\n",game.board)
     step = 0 
-    #explored board for the object instance
+    #explored nodes
     exploredBoard = {} 
-    #make copy of original
-    gameCopy = copy.copy(game)
+    #make copy of original, starting node
+    gameCopy = copy.deepcopy(game)
     #initialize start queue
-    queue = deque([gameCopy])
-    
+    queue = deque([Node(gameCopy)])
     # keep looping until final state is reached
     while queue:
-        # initialize path and pop from queue
-        node = Node(queue.popleft())
+        # initialize path and apply bfs or dfs to queue
+        node = searchFunction(queue)
         #current board from path
         boardKey = keyMap(node.game.board)
-        cost = manhattanCost(node.game.board)
-
-        # debug:show steps and board pathing
+        #print(manhattanCost(node.game.board))
+        #debug:show steps and board pathing
         step += 1
         print("step:", step)
         print_board(node.game)
-        
         # add neighbours of node to queue
         neighbours = find_neighbor(node)
         for neighbour in neighbours:
+            #print("neighbour:")
+            #print_board(neighbour.game)
             # make sure not explore repeated paths
-            if  keyMap(neighbour) not in exploredBoard:
+            if  keyMap(neighbour.game.board) not in exploredBoard:
                 # return path if neighbour is goal
-                if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
-                    path.append(neighbour)
-                    print("BFS:")
-                    return print(*path, sep='\n-------\n')
-                #keep track of path
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
+                if is_final_state(neighbour.game):
+                    pathstep = 0
+                    #print("backstep:", pathstep)
+                    #print_board(neighbour.game)
+                    for parent in neighbour.rootPath():
+                        pathstep += 1
+                        print("backstep:", pathstep)
+                        print_board(parent.game)
+                    return 
+                #add neighbour to queue
+                queue.append(neighbour)
         # add node to list of checked nodes
         exploredBoard[boardKey] = True
     return 
-def exploreDFS(game):
-    #if start state is final
-    if is_final_state(game):
-        print("DFS:")
-        return print("Start is final:\n",game.board)
-    step = 0 
-    #explored board for the object instance
-    exploredBoard = {}
-    #make copy of original
-    gameCopy = copy.copy(game)   
-    queue = deque([[gameCopy.board]])
-    
-    # keep looping until final state is reached
-    while queue:
-        # initialize path and pop from queue
-        path = queue.pop()
-        
-        #current board from path
-        gameCopy.board = path[-1]
-        boardKey = keyMap(gameCopy.board)
-        gameCopy.emptyCell = np.where(gameCopy.board == 0)
-        
-        # debug:show steps and board pathing
-        step += 1
-        print("step:", step)
-        print_board(gameCopy)
-        
-        # add neighbours of node to queue
-        neighbours = find_neighbor(gameCopy)
-        for neighbour in neighbours:
-            # make sure not explore repeated paths
-            if  keyMap(neighbour) not in exploredBoard:
-                # return path if neighbour is goal
-                if np.array_equal(neighbour,[[0, 1, 2], [5, 4, 3]]):
-                    path.append(neighbour)
-                    print("DFS:")
-                    return print(*path, sep='\n-------\n')
-                #keep track of path
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
-        # add node to list of checked nodes
-        exploredBoard[boardKey] = True
-    return 
+
+def BFS(queue):
+    return queue.popleft()
+def DFS(queue):
+    return queue.pop()
 
 # key mapping for explored nodes
 def keyMap(board):
@@ -139,42 +116,34 @@ def naiveCost(game):
     return cost
 
 
-#find valid moves or board states
+#return all valid moves as nodes
 def find_neighbor(node):
-    #TODO can optimize by saving previous move!!!(game,path,heuristic)
-    #valid move table
-    #TODO change x y variables
-    x,y=node.game.emptyCell
-    def moveDown():
-        board = np.copy(game.board)
-        board[x,y],board[x+1,y] = board[x+1,y],board[x,y]
-        return board
-    def moveRight():
-        board = np.copy(game.board)
-        board[x,y],board[x,y+1] = board[x,y+1],board[x,y]
-        return board
-    def moveLeft():
-        board = np.copy(game.board)
-        board[x,y],board[x,y-1] = board[x,y-1],board[x,y]
-        return board
-    def moveUp():
-        board = np.copy(game.board)
-        board[x,y],board[x-1,y] = board[x-1,y],board[x,y]
-        return board
-    if x[0] == 0 and y[0] == 0:
-        return [moveDown(), moveRight()]
-    elif x[0] == 0 and y[0] == 1:
-        return [moveDown(), moveRight(), moveLeft()]
-    elif x[0] == 0 and y[0] == 2:
-        return [moveDown(), moveLeft()]
-    elif x[0] == 1 and y[0] == 0:
-        return [moveRight(), moveUp()]
-    elif x[0] == 1 and y[0] == 1:
-        return [moveRight(), moveUp(), moveLeft()]
-    elif x[0] == 1 and y[0] == 2:
-        return [moveUp(), moveLeft()]
-    else: return print("error in find_neighbor")
-    
+    #optimized by checking prev move
+    #valid node list
+    neighbours = []
+    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
+    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
+        newNode = Node(moveDown(node.game),node)
+        newNode.prev = "D"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
+        newNode = Node(moveRight(node.game),node)
+        newNode.prev = "R"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (y > 0) and node.prev != "D":
+        newNode = Node(moveUp(node.game),node)
+        newNode.prev = "U"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    if (x > 0) and node.prev != "R":
+        newNode = Node(moveLeft(node.game),node)
+        newNode.prev = "L"
+        #node.children.append(newNode)
+        neighbours.append(newNode)
+    return neighbours
+   
 #print board state
 def print_board(game):
     print("board:\n",game.board)
@@ -184,3 +153,28 @@ def print_board(game):
 #check if it is final state of game
 def is_final_state(game):
     return np.array_equal(game.board,game.goal)
+
+def moveDown(game):
+    gameCopy = copy.deepcopy(game)
+    y,x = gameCopy.emptyCell[0][0],gameCopy.emptyCell[1][0]
+    gameCopy.board[y,x],gameCopy.board[y+1,x] = gameCopy.board[y+1,x],gameCopy.board[y,x]
+    gameCopy.emptyCell[0][0] +=1
+    return gameCopy
+def moveRight(game):
+    gameCopy = copy.deepcopy(game)
+    y,x = gameCopy.emptyCell[0][0],gameCopy.emptyCell[1][0]
+    gameCopy.board[y,x],gameCopy.board[y,x+1] = gameCopy.board[y,x+1],gameCopy.board[y,x]
+    gameCopy.emptyCell[1][0] +=1
+    return gameCopy
+def moveLeft(game):
+    gameCopy = copy.deepcopy(game)
+    y,x = gameCopy.emptyCell[0][0],gameCopy.emptyCell[1][0]
+    gameCopy.board[y,x],gameCopy.board[y,x-1] = gameCopy.board[y,x-1],gameCopy.board[y,x]
+    gameCopy.emptyCell[1][0] -=1
+    return gameCopy
+def moveUp(game):
+    gameCopy = copy.deepcopy(game)
+    y,x = gameCopy.emptyCell[0][0],gameCopy.emptyCell[1][0]
+    gameCopy.board[y,x],gameCopy.board[y-1,x] = gameCopy.board[y-1,x],gameCopy.board[y,x]
+    gameCopy.emptyCell[0][0] -=1
+    return gameCopy
