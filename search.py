@@ -6,7 +6,7 @@ from collections import deque
 import gameTable
 import heapq
 class Node:
-    def __init__(self, game, parent=None):
+    def __init__(self, game, parent=None, children=None):
         self.game = game
         self.parent = parent
         self.children = []
