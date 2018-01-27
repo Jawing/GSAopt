@@ -102,9 +102,9 @@ def explore(game, searchStructure):
                     return 
                 
                 
-                #workaround node comparison
-                depth += 0.1
-                neighbour.depth += depth
+                #workaround node comparison not working
+                #depth += 0.1
+                #neighbour.depth += depth
                 
                 #add neighbour to queue
                 queue.append(neighbour)
