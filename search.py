@@ -117,6 +117,7 @@ def moveUp(game):
     return gameCopy
 
 #NOTE could return all valid moves as node's children
+#NOTE default
 #DRUL order find neighbour BFS
 #LURD order find neighbour DFS
 def find_neighbourCC(node):
@@ -175,76 +176,6 @@ def find_neighbourC(node):
         neighbours.append(newNode)
     return neighbours 
 
-#Order by lower numbered piece Decreasing
-def find_neighbourDec(node):
-    #optimized by checking prev move
-    #valid node list
-    neighbours = []
-    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
-    if (x > 0) and node.prev != "R":
-        newNode = Node(moveLeft(node.game),node)
-        newNode.prev = "L"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (moveCost,newNode))
-    if (y > 0) and node.prev != "D":
-        newNode = Node(moveUp(node.game),node)
-        newNode.prev = "U"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (moveCost,newNode))
-    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
-        newNode = Node(moveRight(node.game),node)
-        newNode.prev = "R"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (moveCost,newNode))
-    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
-        newNode = Node(moveDown(node.game),node)
-        newNode.prev = "D"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (moveCost,newNode))
-    getList = []
-    while neighbours:
-        getList.append(heapq.heappop(neighbours)[1])
-    return getList 
-
-#Order by lower numbered piece Increasing
-def find_neighbourInc(node):
-    #optimized by checking prev move
-    #valid node list
-    neighbours = []
-    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
-    if (x > 0) and node.prev != "R":
-        newNode = Node(moveLeft(node.game),node)
-        newNode.prev = "L"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (-moveCost,newNode))
-    if (y > 0) and node.prev != "D":
-        newNode = Node(moveUp(node.game),node)
-        newNode.prev = "U"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (-moveCost,newNode))
-    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
-        newNode = Node(moveRight(node.game),node)
-        newNode.prev = "R"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (-moveCost,newNode))
-    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
-        newNode = Node(moveDown(node.game),node)
-        newNode.prev = "D"
-        newNode.depth = node.depth + 1
-        moveCost = newNode.game.board[y][x]
-        heapq.heappush(neighbours, (-moveCost,newNode))
-    getList = []
-    while neighbours:
-        getList.append(heapq.heappop(neighbours)[1])
-    return getList 
-
 # find_neighbourCC but weighted with distance = value moved
 def find_neighbourW(node):
     #optimized by checking prev move
@@ -300,10 +231,11 @@ def exploreBFS(game):
 
         
         # add neighbours of node to queue
-        #BFS Order
-        neighbours = find_neighbourDec(node)
+        neighbours = find_neighbourCC(node)
 
-
+        # array for resorting the nodes in heap by compare
+        #last moved node
+        sortedN = []
         for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
             #print("neighbour:")
@@ -321,7 +253,16 @@ def exploreBFS(game):
                         print_board(parent.game)
                     return 
                 #add neighbour to queue
-                queue.append(neighbour)
+                heapq.heappush(sortedN,(neighbour))
+        #append back into temp queue
+        #DFS last element needs to be popped first
+        tempQ = deque()            
+        while sortedN:
+            tempQ.append(heapq.heappop(sortedN))
+        while tempQ:
+            queue.append(tempQ.pop())
+        
+            
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return print("Error final state not found")
@@ -349,9 +290,11 @@ def exploreDFS(game):
 
         
         # add neighbours of node to queue
-        #DFS Order
-        neighbours = find_neighbourInc(node)
-
+        neighbours = find_neighbourCC(node)
+        
+        # array for resorting the nodes in heap by compare
+        #last moved node
+        sortedN = []
 
         for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
@@ -370,7 +313,15 @@ def exploreDFS(game):
                         print_board(parent.game)
                     return 
                 #add neighbour to queue
-                queue.append(neighbour)
+                heapq.heappush(sortedN,(neighbour))
+        #append back into temp queue
+        #DFS last element needs to be popped first
+        tempQ = deque()            
+        while sortedN:
+            tempQ.append(heapq.heappop(sortedN))
+        while tempQ:
+            queue.append(tempQ.pop())
+
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return print("Error final state not found")
