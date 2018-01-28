@@ -10,16 +10,16 @@ game1 = gameTable.Board(np.array([[1, 4, 2], [5, 3, 0]]))
 game2 = gameTable.Board(finalState)
 
 
-# Breadth First Search
-print("\nBreadth First Search")
-search.explore(game1, search.SearchQueue, gameTable.NoCost)
-# Uniform Cost Search
-print("\nUniform Cost Search")
-search.explore(game1, search.SearchHeap, gameTable.NoCost)
-# Depth First Search
-print("\nDepth First Search")
-search.explore(game1, search.SearchStack, gameTable.NoCost)
-# Iterative Depth First Search
 
-print("\nIterative Depth First Search")
-search.exploreiter(game1, gameTable.NoCost)
+search.exploreBFS(game1)
+
+search.exploreDFS(game1)
+
+print("Uniform Cost Search")
+search.exploreH(game1, gameTable.NoCost)
+
+print("A* Search")
+search.exploreH(game1, gameTable.manhattanCost)
+
+print("A* Search Weighted")
+search.exploreH(game1, gameTable.manhattanCost, search.find_neighbourW)
