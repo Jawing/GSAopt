@@ -23,11 +23,28 @@ class Node:
         self.children = find_neighbour(self)
         return
     """
-    #comparison function for heapq after depth
-    #TODO currenly only using id, future use cost?
-    #id is tuple paired comparison
+    #comparison function for heapq
+    #comparison order by lower number piece previously moved
+    #otherwise return ID
+    #HACK recusively compare order by lower number piece
     def __lt__(self, other):
-        return self.id < other.id
+        #BUG could bug if the path is same number and followed to the end
+        if self.id == other.id:
+            return False
+        y,x = self.game.emptyCell[0][0],self.game.emptyCell[1][0]
+        yo,xo = other.game.emptyCell[0][0],other.game.emptyCell[1][0]
+        if self.parent.game.board[y,x] == other.parent.game.board[yo,xo]:
+            if self.parent == None: 
+                return self.id < other.id
+            while self.parent:
+                self = self.parent
+                other = other.parent
+                return self.__lt__(other)
+        else: return self.parent.game.board[y,x] < other.parent.game.board[yo,xo]
+        
+
+    #def __lt__(self, other):
+     #   return self.id < other.id
 
     """Currently not used
     def add_child(self, game):
@@ -112,22 +129,100 @@ def explore(game, searchStructure, heuristic):
         exploredBoard[node.id] = node
     return print("Error final state not found")
 
+
+def exploreiter(game, heuristic):
+    #return if start state is final
+    if is_final_state(game):
+        print("End:")
+        return print("Start is final:\n",game.board)
+    step = 0 #step countter
+    exploredBoard = {} #explored nodes
+    #make copy of original, starting game 
+    gameCopy = copy.deepcopy(game) 
+    #initialize search structure
+    queue = deque([Node(gameCopy)]) 
+    #store the bottom nodes using heapQueue to keep order priority
+    #see Node class __lt__ function
+    iterQueue = []
+    maxDepth = 0
+
+    # keep looping until final state is reached
+    while queue:
+        # pop node
+        node = queue.pop()
+        # push current nodes at maxDepth to heap
+        while node.depth >= maxDepth: 
+            heapq.heappush(iterQueue,(node))
+            # if queue not empty pop a node
+            if queue: 
+                node = queue.pop()
+            # if empty increase max depth, push back
+            # nodes from heap to stack queue
+            else:
+                maxDepth += 1
+                while iterQueue:
+                    queue.appendleft(heapq.heappop(iterQueue))
+                node = queue.pop()
+                
+
+        #NOTE:Debug:show search path and depth
+        step += 1
+        print("Search Step:", step)
+        print("max depth",maxDepth)
+        print("node depth",node.depth)
+        print_board(node.game)
+        
+
+        # add neighbours of node to queue
+        #BFS 
+        #neighbours = find_neighbourDec(node)
+        #DFS
+        neighbours = find_neighbourInc(node)
+        #neighbours = find_neighbourC(node)
+
+        for neighbour in neighbours:
+            #NOTE:Debug:print all neighbours
+            #print("neighbour:")
+            #print_board(neighbour.game)
+            
+            #Calculate cost based on heuristic
+            neighbour.cost = heuristic(neighbour.game) + neighbour.distance
+
+            # make sure not explore repeated paths
+            if  neighbour.id not in exploredBoard:
+                # return path if neighbour is goal
+                if is_final_state(neighbour.game):
+                    pathstep = 0
+                    print()
+                    for parent in neighbour.rootPath():
+                        #NOTE:Debug:show solution path
+                        pathstep += 1
+                        print("Sol. Backstep:", pathstep)
+                        print_board(parent.game)
+                    return 
+                #add neighbour to queue
+                queue.append(neighbour)
+        # add node to list of checked nodes
+        exploredBoard[node.id] = node
+    return print("depth too shallow final state not found")
+
+
 #different searching Structure
-class BFS:
+class SearchQueue:
     def __init__(self,node):
         self.list = deque([node])
     def get(self):
         return self.list.popleft()
     def append(self,node):
         return self.list.append(node)
-class DFS:
+class SearchStack:
     def __init__(self,node):
         self.list = deque([node])
     def get(self):
         return self.list.pop()
     def append(self,node):
         return self.list.append(node)
-class BinaryHeap:
+class SearchHeap:
     def __init__(self,node):
         self.list = []
         heapq.heappush(self.list, (node.distance,node))
@@ -142,9 +237,8 @@ def keyMap(game):
 
 
 #NOTE could return all valid moves as node's children
-#LURD find neighbour
-#Gives Counter Clockwise expansion for BFS
-#Gives Clockwise expansion for DFS
+#DRUL order find neighbour BFS
+#LURD order find neighbour DFS
 def find_neighbourCC(node):
     #optimized by checking prev move
     #valid node list
@@ -177,9 +271,8 @@ def find_neighbourCC(node):
         neighbours.append(newNode)
     return neighbours
 
-#LURD find neighbour
-#Gives Counter Clockwise expansion for DFS
-#Gives Clockwise expansion for BFS
+#DRUL order find neighbour DFS
+#LURD order find neighbour BFS
 def find_neighbourC(node):
     #optimized by checking prev move
     #valid node list
@@ -211,7 +304,7 @@ def find_neighbourC(node):
         neighbours.append(newNode)
     return neighbours 
 
-#list to move lower numbered piece in decreasing order
+#Order by lower numbered piece Decreasing
 def find_neighbourDec(node):
     #optimized by checking prev move
     #valid node list
@@ -250,7 +343,7 @@ def find_neighbourDec(node):
         getList.append(heapq.heappop(neighbours)[1])
     return getList 
 
-#list to move lower numbered piece in increasing order
+#Order by lower numbered piece Increasing
 def find_neighbourInc(node):
     #optimized by checking prev move
     #valid node list
