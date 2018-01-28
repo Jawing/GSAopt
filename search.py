@@ -254,15 +254,10 @@ def exploreBFS(game):
                     return 
                 #add neighbour to queue
                 heapq.heappush(sortedN,(neighbour))
-        #append back into temp queue
-        #DFS last element needs to be popped first
-        tempQ = deque()            
+        #append back into queue          
         while sortedN:
-            tempQ.append(heapq.heappop(sortedN))
-        while tempQ:
-            queue.append(tempQ.pop())
+            queue.append(heapq.heappop(sortedN))
         
-            
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return print("Error final state not found")
@@ -314,14 +309,14 @@ def exploreDFS(game):
                     return 
                 #add neighbour to queue
                 heapq.heappush(sortedN,(neighbour))
-        #append back into temp queue
+        #append back into queue          
         #DFS last element needs to be popped first
         tempQ = deque()            
         while sortedN:
             tempQ.append(heapq.heappop(sortedN))
         while tempQ:
             queue.append(tempQ.pop())
-
+            
         # add node to list of checked nodes
         exploredBoard[node.id] = node
     return print("Error final state not found")
