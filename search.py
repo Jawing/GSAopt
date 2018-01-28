@@ -34,8 +34,6 @@ class Node:
         y,x = self.game.emptyCell[0][0],self.game.emptyCell[1][0]
         yo,xo = other.game.emptyCell[0][0],other.game.emptyCell[1][0]
         if self.parent.game.board[y,x] == other.parent.game.board[yo,xo]:
-            if self.parent == None: 
-                return self.id < other.id
             while self.parent:
                 self = self.parent
                 other = other.parent
