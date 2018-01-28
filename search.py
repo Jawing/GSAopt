@@ -46,11 +46,12 @@ class Node:
             return str(self.game)
         return '{game} [{children}]'.format(game=self.game, children=', '.join(map(str, self.children)))   
     #interate through all children in tree
--    def getChild(self):
--        yield self
--        for child in self.children:
--            for node in child:
--                yield node
+ 
+    def getChild(self):
+         yield self
+         for child in self.children:
+             for node in child:
+                 yield node
     """
     
     #parentPath returns everything to original
@@ -81,7 +82,10 @@ def explore(game, searchStructure, heuristic):
         print("Search Step:", step)
         print_board(node.game)
         # add neighbours of node to queue
-        neighbours = find_neighbour(node)
+        #BFS neighbours = find_neighbourDec(node)
+        #DFS neighbours = find_neighbourInc(node)
+        neighbours = find_neighbourC(node)
+
         for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
             #print("neighbour:")
@@ -94,10 +98,8 @@ def explore(game, searchStructure, heuristic):
             if  neighbour.id not in exploredBoard:
                 # return path if neighbour is goal
                 if is_final_state(neighbour.game):
-                    step += 1
-                    print("Search Step:", step)
-                    print_board(neighbour.game)
                     pathstep = 0
+                    print()
                     for parent in neighbour.rootPath():
                         #NOTE:Debug:show solution path
                         pathstep += 1
@@ -138,9 +140,11 @@ class BinaryHeap:
 def keyMap(game):
     return tuple(map(tuple,game.board))
 
-#return all valid moves as node's children
-#Could link to parent as child
-#Counter Clockwise find neighbour
+
+#NOTE could return all valid moves as node's children
+#LURD find neighbour
+#Gives Counter Clockwise expansion for BFS
+#Gives Clockwise expansion for DFS
 def find_neighbourCC(node):
     #optimized by checking prev move
     #valid node list
@@ -173,8 +177,10 @@ def find_neighbourCC(node):
         neighbours.append(newNode)
     return neighbours
 
-#Clockwise find neighbour
-def find_neighbour(node):
+#LURD find neighbour
+#Gives Counter Clockwise expansion for DFS
+#Gives Clockwise expansion for BFS
+def find_neighbourC(node):
     #optimized by checking prev move
     #valid node list
     neighbours = []
@@ -205,10 +211,88 @@ def find_neighbour(node):
         neighbours.append(newNode)
     return neighbours 
 
+#list to move lower numbered piece in decreasing order
+def find_neighbourDec(node):
+    #optimized by checking prev move
+    #valid node list
+    neighbours = []
+    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
+    if (x > 0) and node.prev != "R":
+        newNode = Node(moveLeft(node.game),node)
+        newNode.prev = "L"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (moveCost,newNode))
+    if (y > 0) and node.prev != "D":
+        newNode = Node(moveUp(node.game),node)
+        newNode.prev = "U"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (moveCost,newNode))
+    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
+        newNode = Node(moveRight(node.game),node)
+        newNode.prev = "R"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (moveCost,newNode))
+    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
+        newNode = Node(moveDown(node.game),node)
+        newNode.prev = "D"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (moveCost,newNode))
+    getList = []
+    while neighbours:
+        getList.append(heapq.heappop(neighbours)[1])
+    return getList 
+
+#list to move lower numbered piece in increasing order
+def find_neighbourInc(node):
+    #optimized by checking prev move
+    #valid node list
+    neighbours = []
+    y,x = node.game.emptyCell[0][0],node.game.emptyCell[1][0]
+    if (x > 0) and node.prev != "R":
+        newNode = Node(moveLeft(node.game),node)
+        newNode.prev = "L"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (-moveCost,newNode))
+    if (y > 0) and node.prev != "D":
+        newNode = Node(moveUp(node.game),node)
+        newNode.prev = "U"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (-moveCost,newNode))
+    if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
+        newNode = Node(moveRight(node.game),node)
+        newNode.prev = "R"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (-moveCost,newNode))
+    if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
+        newNode = Node(moveDown(node.game),node)
+        newNode.prev = "D"
+        newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
+        moveCost = newNode.game.board[y][x]
+        heapq.heappush(neighbours, (-moveCost,newNode))
+    getList = []
+    while neighbours:
+        getList.append(heapq.heappop(neighbours)[1])
+    return getList 
+
 #print board state
 def print_board(game):
-    print("board:\n",game.board)
-    print("emptyCell:\n",game.emptyCell,"\n")
+    print(game.board)
+    #print("emptyCell:\n",game.emptyCell,"\n")
     return 
 
 #check if it is final state of game
