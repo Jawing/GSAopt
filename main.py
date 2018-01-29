@@ -14,13 +14,13 @@ test = [[3, 4, 5], [2, 0, 1]]
 
 game1 = gameTable.Board(np.array(test))
 
-# search.exploreBFS(game1)
-# search.exploreDFS(game1)
-# search.exploreIter(game1)
+search.exploreBFS(game1)
+search.exploreDFS(game1)
+search.exploreIter(game1)
 print("\nUniform Cost Search")
-#search.exploreH(game1, gameTable.NoCost)
+search.exploreH(game1, gameTable.NoCost)
 print("\nA* Search")
-#search.exploreH(game1, gameTable.manhattanCost)
+search.exploreH(game1, gameTable.manhattanCost)
 print("\nA* Search Weighted")
 search.exploreH(game1, gameTable.manhattanCost, search.find_neighbourW)
 print("\nA* Search DOM")

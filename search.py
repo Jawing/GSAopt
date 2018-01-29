@@ -198,27 +198,26 @@ def find_neighbourW(node):
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
-        #TODO fix weights
         newNode.depth = node.depth + 1
-        newNode.distance = 3+node.distance + newNode.game.board[y,x]
+        newNode.distance = node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
-        newNode.distance = 3+node.distance + newNode.game.board[y,x]
+        newNode.distance = node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
-        newNode.distance = 3+node.distance + newNode.game.board[y,x]
+        newNode.distance = node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
-        newNode.distance = 3+node.distance + newNode.game.board[y,x]
+        newNode.distance = node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     return neighbours
 
@@ -409,7 +408,7 @@ def exploreIter(game):
     #return if start state is final
     if is_final_state(game):
         return print("Start is final:\n",game.board)
-    step = 0 #step countter
+    step = 0 #step counter
     exploredBoard = {} #explored nodes
     #make copy of original, starting game 
     gameCopy = copy.deepcopy(game) 

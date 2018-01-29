@@ -24,8 +24,10 @@ def manhattanCost(game):
     cost = 0
     for y in range(game.board.shape[0]):
         for x in range(game.board.shape[1]):
-            xf, yf = game.goalLocation[game.board[y,x]]
-            cost += abs(xf - x) + abs(yf - y)
+            current = game.board[y,x]
+            if current != 0:
+                xf, yf = game.goalLocation[current]
+                cost += abs(xf - x) + abs(yf - y)
     return cost
 
 #cost heuristic +1 for wrong tile location
@@ -33,7 +35,8 @@ def naiveCost(game):
     cost = 0
     for y in range(game.board.shape[0]):
         for x in range(game.board.shape[1]):
-            if game.goalLocation[game.board[y,x]] != (x, y):
+            current = game.board[y,x]
+            if game.goalLocation[current] != (x, y) and current != 0:
                 cost += 1
     return cost
 
