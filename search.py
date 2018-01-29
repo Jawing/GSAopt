@@ -237,6 +237,9 @@ def exploreBFS(game):
     while queue:
         # pop node
         node = queue.popleft()
+        #HACK skip nodes already explored
+        if node.id in exploredBoard:
+            continue
         #NOTE:Debug:show search path
         step += 1
         print("Search Step:", step)
@@ -291,6 +294,10 @@ def exploreDFS(game):
     while queue:
         # pop node
         node = queue.pop()
+
+        #HACK skip nodes already explored
+        if node.id in exploredBoard:
+            continue
         #NOTE:Debug:show search path
         step += 1
         print("Search Step:", step)
@@ -347,14 +354,22 @@ def exploreH(game, heuristic, find_neighbour=find_neighbourCC):
     #make copy of original, starting game 
     gameCopy = copy.deepcopy(game) 
     #initialize search structure
-    #BUG TODO need to customize heap to overwrite same game
-    #replace with game that cost less.
+    
     queue = []
     heapq.heappush(queue, (0,Node(gameCopy)))
     # keep looping until final state is reached
     while queue:
         # pop node
         node = heapq.heappop(queue)[1]
+
+
+        #XXX need to customize heap to overwrite same game
+        #replace with game that cost less.
+        #HACK skip nodes already explored
+        if node.id in exploredBoard:
+            continue
+
+
         #NOTE:Debug:show search path
         step += 1
         print("Search Step:", step)
