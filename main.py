@@ -15,7 +15,7 @@ test = [[3, 4, 5], [2, 0, 1]]
 game1 = gameTable.Board(np.array(test))
 
 # NOTE uncomment to test out searching algorithm
-search.exploreBFS(game1)
+# search.exploreBFS(game1)
 # search.exploreDFS(game1)
 # search.exploreIter(game1)
 # search.exploreIterN(game1)
