@@ -347,6 +347,8 @@ def exploreH(game, heuristic, find_neighbour=find_neighbourCC):
     #make copy of original, starting game 
     gameCopy = copy.deepcopy(game) 
     #initialize search structure
+    #BUG TODO need to customize heap to overwrite same game
+    #replace with game that cost less.
     queue = []
     heapq.heappush(queue, (0,Node(gameCopy)))
     # keep looping until final state is reached
