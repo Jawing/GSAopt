@@ -13,7 +13,9 @@ class Node:
         #self.children = children or []
         #store prev move
         self.prev = None
+        #tree depth
         self.depth = 0
+        #cost of a move
         self.distance = 0
         self.cost = 0
         #Hashkey
@@ -28,16 +30,19 @@ class Node:
     #otherwise return ID
     #HACK recusively compare order by lower number piece
     def __lt__(self, other):
-        #BUG could bug if the path is same number and followed to the end
+        #if both path followed have same weight
+        #self > other, added in order
         if self.id == other.id:
             return False
         y,x = self.game.emptyCell[0][0],self.game.emptyCell[1][0]
         yo,xo = other.game.emptyCell[0][0],other.game.emptyCell[1][0]
         if self.parent.game.board[y,x] == other.parent.game.board[yo,xo]:
-            while self.parent:
+            #while they still have parents otherwise compare depth
+            while self.parent.parent and other.parent.parent:
                 self = self.parent
                 other = other.parent
                 return self.__lt__(other)
+            return self.depth < other.depth
         else: return self.parent.game.board[y,x] < other.parent.game.board[yo,xo]
         
 
@@ -129,21 +134,25 @@ def find_neighbourCC(node):
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     return neighbours
 
@@ -158,25 +167,29 @@ def find_neighbourC(node):
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
         newNode.depth = node.depth + 1
+        newNode.distance = node.distance + 1
         neighbours.append(newNode)
     return neighbours 
 
-# find_neighbourCC but weighted with distance = value moved
+# find_neighbourCC but weighted with depth = value moved
 def find_neighbourW(node):
     #optimized by checking prev move
     #valid node list
@@ -185,26 +198,27 @@ def find_neighbourW(node):
     if (y < (node.game.board.shape[0]-1)) and node.prev != "U":
         newNode = Node(moveDown(node.game),node)
         newNode.prev = "D"
+        #TODO fix weights
         newNode.depth = node.depth + 1
-        newNode.distance = node.distance + newNode.game.board[y,x]
+        newNode.distance = 3+node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (x < (node.game.board.shape[1]-1)) and node.prev != "L":
         newNode = Node(moveRight(node.game),node)
         newNode.prev = "R"
         newNode.depth = node.depth + 1
-        newNode.distance = node.distance + newNode.game.board[y,x]
+        newNode.distance = 3+node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (y > 0) and node.prev != "D":
         newNode = Node(moveUp(node.game),node)
         newNode.prev = "U"
         newNode.depth = node.depth + 1
-        newNode.distance = node.distance + newNode.game.board[y,x]
+        newNode.distance = 3+node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     if (x > 0) and node.prev != "R":
         newNode = Node(moveLeft(node.game),node)
         newNode.prev = "L"
         newNode.depth = node.depth + 1
-        newNode.distance = node.distance + newNode.game.board[y,x]
+        newNode.distance = 3+node.distance + newNode.game.board[y,x]
         neighbours.append(newNode)
     return neighbours
 
@@ -322,7 +336,7 @@ def exploreDFS(game):
     return print("Error final state not found")
 
 # Heuristic Search
-def exploreH(game, heuristic, find_neighbour=find_neighbourC):
+def exploreH(game, heuristic, find_neighbour=find_neighbourCC):
 
     print("Heuristic Search")
 
@@ -356,10 +370,20 @@ def exploreH(game, heuristic, find_neighbour=find_neighbourC):
             #print("neighbour:")
             #print_board(neighbour.game)
 
+
             
             #Calculate cost based on heuristic
             neighbour.cost = heuristic(neighbour.game) + neighbour.distance
+            
+            # test for consistency
+            if neighbour.cost < node.cost:
+                #NOTE naive fix
+                neighbour.cost = node.cost
+            #if neighbour.cost == node.cost:
+            #tie breaking fixed in heap
 
+            #another test for consistency but need fix node.h   
+            #if not (node.heuristic) <= (neighbour.movecost + neighbour.heuristic):
 
             # make sure not explore repeated paths
             if  neighbour.id not in exploredBoard:
@@ -394,7 +418,7 @@ def exploreIter(game):
     #store the bottom nodes using heapQueue to keep order priority
     #see Node class __lt__ function
     iterQueue = []
-    maxDepth = 0
+    maxDepth = 1
 
     # keep looping until final state is reached
     while queue:
@@ -412,8 +436,7 @@ def exploreIter(game):
                 maxDepth += 1
                 while iterQueue:
                     queue.appendleft(heapq.heappop(iterQueue))
-                node = queue.pop()
-                
+                node = queue.pop() 
 
         #NOTE:Debug:show search path and depth
         step += 1
@@ -421,12 +444,15 @@ def exploreIter(game):
         print("max depth",maxDepth)
         print("node depth",node.depth)
         print_board(node.game)
-        
+        b = len(exploredBoard)
+        if step == 173: 
+            a = 0
 
         # add neighbours of node to queue
-        #DFS
-        neighbours = find_neighbourInc(node)
-
+        neighbours = find_neighbourCC(node)
+        # array for resorting the nodes in heap by compare
+        #last moved node
+        sortedN = []
         for neighbour in neighbours:
             #NOTE:Debug:print all neighbours
             #print("neighbour:")
@@ -444,9 +470,24 @@ def exploreIter(game):
                         print_board(parent.game)
                     return 
                 #add neighbour to queue
-                queue.append(neighbour)
+                heapq.heappush(sortedN,(neighbour))
+        #append back into queue          
+        #DFS last element needs to be popped first
+        tempQ = deque()            
+        while sortedN:
+            tempQ.append(heapq.heappop(sortedN))
+        while tempQ:
+            queue.append(tempQ.pop())
+
         # add node to list of checked nodes
         exploredBoard[node.id] = node
+
+        # all nodes have run out get from leaf nodes
+        # increase depth
+        if not queue:
+            maxDepth += 1
+            while iterQueue:
+                queue.appendleft(heapq.heappop(iterQueue))
     return print("Error final state not found")
 
 

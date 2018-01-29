@@ -37,5 +37,8 @@ def naiveCost(game):
                 cost += 1
     return cost
 
+def twoheuristics(game):
+    return manhattanCost(game)+naiveCost(game)
+
 def NoCost(game):
     return 0
