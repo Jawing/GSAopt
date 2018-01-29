@@ -404,6 +404,7 @@ def exploreH(game, heuristic, find_neighbour=find_neighbourCC):
     return print("Error final state not found")
 
 # Iterative Depth First Search
+# stores the leaf nodes
 def exploreIter(game):
     print("Iterative Depth First Search")
     #return if start state is final
@@ -425,6 +426,7 @@ def exploreIter(game):
         # pop node
         node = queue.pop()
         # push current nodes at maxDepth to heap
+        #NOTE heap is not necessarily needed for storing
         while node.depth >= maxDepth: 
             heapq.heappush(iterQueue,(node))
             # if queue not empty pop a node
@@ -444,9 +446,6 @@ def exploreIter(game):
         print("max depth",maxDepth)
         print("node depth",node.depth)
         print_board(node.game)
-        b = len(exploredBoard)
-        if step == 173: 
-            a = 0
 
         # add neighbours of node to queue
         neighbours = find_neighbourCC(node)
@@ -488,6 +487,91 @@ def exploreIter(game):
             maxDepth += 1
             while iterQueue:
                 queue.appendleft(heapq.heappop(iterQueue))
+    return print("Error final state not found")
+
+# Iterative Depth First Search
+# doesn't store leaf nodes and will restart from beginning
+def exploreIterN(game):
+    print("Iterative Depth First Search")
+    #return if start state is final
+    if is_final_state(game):
+        return print("Start is final:\n",game.board)
+    step = 0 #step counter
+    exploredBoard = {} #explored nodes
+    #make copy of original, starting game 
+    gameCopy = copy.deepcopy(game) 
+    #initialize search structure
+    queue = deque([Node(gameCopy)]) 
+    #store the bottom nodes using heapQueue to keep order priority
+    #see Node class __lt__ function
+    maxDepth = 1
+
+    # keep looping until final state is reached
+    while queue:
+        # pop node
+        node = queue.pop()
+
+        
+        # if at node at max depth and queue not empty pop a node
+        while node.depth >= maxDepth: 
+            if queue: 
+                node = queue.pop()
+            # if empty increase max depth
+            # start from the beginning
+            else:
+                maxDepth += 1
+                queue.appendleft(Node(gameCopy))
+                #reset board
+                exploredBoard = {}
+                node = queue.pop() 
+
+        #NOTE:Debug:show search path and depth
+        step += 1
+        print("Search Step:", step)
+        print("max depth",maxDepth)
+        print("node depth",node.depth)
+        print_board(node.game)
+
+        # add neighbours of node to queue
+        neighbours = find_neighbourCC(node)
+        # array for resorting the nodes in heap by compare
+        #last moved node
+        sortedN = []
+        for neighbour in neighbours:
+            #NOTE:Debug:print all neighbours
+            #print("neighbour:")
+            #print_board(neighbour.game)
+            # make sure not explore repeated paths
+            if  neighbour.id not in exploredBoard:
+                # return path if neighbour is goal
+                if is_final_state(neighbour.game):
+                    pathstep = 0
+                    print()
+                    for parent in neighbour.rootPath():
+                        #NOTE:Debug:show solution path
+                        pathstep += 1
+                        print("Sol. Backstep:", pathstep)
+                        print_board(parent.game)
+                    return 
+                #add neighbour to queue
+                heapq.heappush(sortedN,(neighbour))
+        #append back into queue          
+        #DFS last element needs to be popped first
+        tempQ = deque()            
+        while sortedN:
+            tempQ.append(heapq.heappop(sortedN))
+        while tempQ:
+            queue.append(tempQ.pop())
+
+        # add node to list of checked nodes
+        exploredBoard[node.id] = node
+
+        # all nodes have run out get from leaf nodes
+        # increase depth and reset board and reset queue
+        if not queue:
+            maxDepth += 1
+            queue.appendleft(Node(gameCopy))
+            exploredBoard = {}
     return print("Error final state not found")
 
 
