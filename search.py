@@ -375,6 +375,7 @@ def exploreH(game, heuristic, find_neighbour=find_neighbourCC):
             neighbour.cost = heuristic(neighbour.game) + neighbour.distance
             
             # test for consistency
+            #NOTE This should never happen
             if neighbour.cost < node.cost:
                 #NOTE naive fix
                 neighbour.cost = node.cost

@@ -41,10 +41,16 @@ def naiveCost(game):
             if game.goalLocation[current] != (x, y) and current != 0:
                 cost += 1
     return cost
-
-#BUG this does not mean a Dominating Heuristics
-def twoheuristics(game):
-    return manhattanCost(game) + naiveCost(game)
-
+#multiplied by the weight of the move
+def manhattanCostWeighted(game):
+    cost = 0
+    for y in range(game.board.shape[0]):
+        for x in range(game.board.shape[1]):
+            current = game.board[y,x]
+            #NOTE for admissability do not take account the 0 position
+            if current != 0:
+                xf, yf = game.goalLocation[current]
+                cost += current * (abs(xf - x) + abs(yf - y))
+    return cost
 def NoCost(game):
     return 0
