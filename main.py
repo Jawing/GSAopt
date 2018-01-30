@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""main method"""
+"""main method for question 1"""
 
 import numpy as np
 import gameTable
@@ -20,11 +20,11 @@ game1 = gameTable.Board(np.array(test))
 # search.exploreIter(game1)
 # search.exploreIterN(game1)
 print("\nUniform Cost Search")
-#search.exploreH(game1, gameTable.NoCost)
+search.exploreH(game1, gameTable.NoCost)
 print("\nA* Search")
-#search.exploreH(game1, gameTable.manhattanCost)
+search.exploreH(game1, gameTable.manhattanCost)
 print("\nA* Search Weighted")
-#search.exploreH(game1, gameTable.manhattanCost, search.find_neighbourW)
+search.exploreH(game1, gameTable.manhattanCost, search.find_neighbourW)
 print("\nA* Search DOM")
 # NOTE this is just like A* Search on a non weighted board
-#search.exploreH(game1, gameTable.manhattanCostWeighted, search.find_neighbourW)
+search.exploreH(game1, gameTable.manhattanCostWeighted, search.find_neighbourW)
