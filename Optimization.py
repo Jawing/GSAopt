@@ -1,8 +1,8 @@
 #!/usr/bin/python
 """question 3"""
 
-#import matplotlib.pyplot as plt
-#import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import math
 from decimal import Decimal
@@ -103,8 +103,9 @@ def annealingSet(tempC, tempStart):
         yLocal = yPrevLocal = function(x)
         temp = tempStart
         boltP = 1
-        #plt.plot(x, yLocal, 'r.')
+        plt.plot(x, yLocal, 'ro')
         yGlobal = xGlobal = 0
+        xMin = xMax = xstart
         #Change until boltzman probability goes to 0 and x less than 10
         while (boltP > 0 and x <= 10) or step == 0:
             temp = temp * tempC
@@ -128,7 +129,7 @@ def annealingSet(tempC, tempStart):
                     if yGlobal < yLocal:
                         yGlobal = yLocal
                         xGlobal = x
-                
+                        plt.plot(xn, y, 'yo')
                     #plt.plot(xn, y, 'r.')
                     break
                 #with some chance still choose y even if worse
@@ -148,12 +149,21 @@ def annealingSet(tempC, tempStart):
                     pass
             # add one step when climbing after selecting the best neighbour
             step += 1
-        """NOTE debugging plot
-        plt.xlabel('x-axis step size:'+str(dx))
+
+            #NOTE plotting range
+            if xMin > xn :
+                xMin = xn
+                plt.plot(xMin, y, 'b*')
+            if xMax < x :
+                xMax = xn
+                plt.plot(xMax, y, 'b*')
+
+
+        plt.xlabel('x-axis')
         plt.ylabel('y-axis')
-        plt.title('hill climbing')
+        plt.title('annealing')
         plt.show()
-        """
+        
         
         print('Final X:', xGlobal, '| Final Y:', yGlobal)
         print('X Start:', xstart, '| Total Steps:', step)
