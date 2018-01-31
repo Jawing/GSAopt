@@ -8,10 +8,6 @@ import math
 from decimal import Decimal
 import random
 
-#xplot = np.linspace(0, 30, 10000)
-#plt.legend(['t', 't**2', 't**3'])
-
-
 #TODO convert to decimal?
 def function(x):
     square = (x)**2
@@ -71,9 +67,6 @@ def annealing(tempC, tempStart):
                     #with some chance still choose y even if worse
                     elif yLocal > y:
                         boltP = math.exp((-(yLocal-y))/temp)
-                        # NOTE To find the best temp to start 
-                        # find the biggest difference between ylocal and y
-                        # rearrange boltp = 0.95 and find temp
                         
                         select = np.random.choice([True,False], 1, p=[boltP, 1-boltP])
                         if select:
@@ -94,14 +87,14 @@ def annealing(tempC, tempStart):
             plt.title('hill climbing')
             plt.show()
             """
-            print('Final X:', x, '| Final Y:', yGlobal, '| Total Steps:',step)
+            print('Final X:', xGlobal, '| Final Y:', yGlobal, '| Total Steps:',step)
             print('X Start:', xstart, '| X Step Size:', dx)
             xstart+=1
             x=xstart
 
 
 def annealingSet(tempC, tempStart):
-    climbSet = {0.02, 0.04, 0.1}
+    climbSet = {0.04, 0.1}
     xstart = x = 0
     #increase the starting position
     while xstart <= 10:
@@ -141,11 +134,10 @@ def annealingSet(tempC, tempStart):
                 #with some chance still choose y even if worse
                 elif yLocal > y:
                     boltP = math.exp((-(yLocal-y))/temp)
-                    # NOTE To find the best temp to start
-                    # find the biggest difference between ylocal and y
-                    # rearrange boltp = 0.95 and find temp
-                    select = np.random.choice(
-                        [True, False], 1, p=[boltP, 1-boltP])
+                    # NOTE To find the best starting temp
+                    # find the biggest difference between ylocal and y(from climbSet)
+                    # rearrange boltp and calculate temp(define exploritory chance boltp=0.99) 
+                    select = np.random.choice([True, False], 1, p=[boltP, 1-boltP])
                     if select:
                         yLocal = y
                         x = xn
@@ -163,12 +155,12 @@ def annealingSet(tempC, tempStart):
         plt.show()
         """
         
-        print('Final X:', x, '| Final Y:', yGlobal)
+        print('Final X:', xGlobal, '| Final Y:', yGlobal)
         print('X Start:', xstart, '| Total Steps:', step)
         xstart += 1
         x = xstart
 
-    print('Temp start:', tempStrart, '| Temp multiplier:', tempC)
+    print('Temp start:', tempStart, '| Temp multiplier:', tempC)
 
 
 def HillclimbingSet():
@@ -269,24 +261,26 @@ def Hillclimbing():
             xstart += 1
             x = xstart
 
-
 #annealing(0.999, 10)
-Hillclimbing()
+#Hillclimbing()
 print("Hill Climbing Set")
-HillclimbingSet()
-print("Annealing Set")
-annealingSet(0.999, 10)
-print("Annealing Set")
-annealingSet(0.99, 10)
-print("Annealing Set")
-annealingSet(0.9, 10)
-print("Annealing Set")
+#HillclimbingSet()
+print("Annealing Set (0.999, 20)")
+annealingSet(0.999, 20)
+print("Annealing Set (0.99, 20)")
+annealingSet(0.99, 20)
+print("Annealing Set (0.9, 20)")
+annealingSet(0.9, 20)
+print("Annealing Set (0.999, 1)")
 annealingSet(0.999, 1)
-print("Annealing Set")
+print("Annealing Set (0.99, 1)")
 annealingSet(0.99, 1)
-print("Annealing Set")
+print("Annealing Set (0.9, 1)")
 annealingSet(0.9, 1)
 
+#NOTE Long computation. Temp=1 is a good exploritory boundary.
+print("Annealing Set Max Opt")
+annealingSet(0.9999, 1)
 
 
     
