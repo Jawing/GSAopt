@@ -273,10 +273,10 @@ def Hillclimbing():
 
 #annealing(0.999, 10)
 #Hillclimbing()
-print("Hill Climbing Set")
+#print("Hill Climbing Set")
 #HillclimbingSet()
-print("Annealing Set (0.999, 20)")
-annealingSet(0.999, 20)
+#print("Annealing Set (0.999, 20)")
+#annealingSet(0.999, 20)
 print("Annealing Set (0.99, 20)")
 annealingSet(0.99, 20)
 print("Annealing Set (0.9, 20)")
